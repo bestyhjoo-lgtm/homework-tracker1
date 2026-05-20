@@ -301,17 +301,7 @@ async function loadAll() {
   }
   // Normalize date keys (server may convert dates to ISO 8601 strings)
   normalizeAll();
-  // local overrides server (preserves user input even if server lost it)
-  try {
-    const lc = JSON.parse(localStorage.getItem('hw_checks') || '{}');
-    const le = JSON.parse(localStorage.getItem('hw_extras') || '{}');
-    const lm = JSON.parse(localStorage.getItem('hw_comments') || '{}');
-    Object.keys(lc).forEach(n => { checks[n] = Object.assign(checks[n]||{}, lc[n]); });
-    Object.keys(le).forEach(n => { extras[n] = Object.assign(extras[n]||{}, le[n]); });
-    Object.keys(lm).forEach(n => { comments[n] = Object.assign(comments[n]||{}, lm[n]); });
-  } catch(e) {}
-  // Final normalization pass to collapse any duplicate keys from local merge
-  normalizeAll();
+  // 서버 데이터를 정규화 후 로컬에 저장 (로컬이 서버를 덮어쓰지 않음)입력 내용: 어디서부터 지워야해?
   applyTombstones();
   pruneEmpties();
   saveLocal();
