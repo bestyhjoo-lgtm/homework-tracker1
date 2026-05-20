@@ -112,7 +112,7 @@
 // =====================================================
 // ★ 여기에 Apps Script 배포 URL을 붙여넣으세요 ★
 // =====================================================
-let SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxhttps://script.google.com/macros/s/AKfycbzC9VjFKs5Tlpou8-haBVcc5__YYqpZDWmhpPIThVkNtH3-3ttRL-ZADxgOmRgxhGMc/exec';
+let SCRIPT_URL = 'https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbzC9VjFKs5Tlpou8-haBVcc5__YYqpZDWmhpPIThVkNtH3-3ttRL-ZADxgOmRgxhGMc/exec';
 // =====================================================
 
 const TEACHER_PW = '111111';
@@ -262,31 +262,25 @@ function showToast(msg, dur=2000) {
   setTimeout(() => t.classList.remove('show'), dur);
 }
 
+async function apiGet() {
+  if (!SCRIPT_URL) return null;
+  try {
+    const sep = SCRIPT_URL.includes('?') ? '&' : '?';
+    const url = SCRIPT_URL + sep + 'action=getAll&_t=' + Date.now();
+    const r = await fetch(url, { cache: 'no-store' });
+    return await r.json();
+  } catch(e) { return null; }
+}
 async function apiPost(body) {
-  if (!SCRIPT_URL) return { error: 'no script url' };
+  if (!SCRIPT_URL) return null;
   try {
     const r = await fetch(SCRIPT_URL, {
       method: 'POST',
-      mode: 'cors',
       cache: 'no-store',
-      redirect: 'follow',
       body: JSON.stringify(body)
     });
-    if (!r.ok) {
-      console.error('apiPost HTTP error:', r.status, r.statusText);
-      return { error: 'HTTP ' + r.status };
-    }
-    const text = await r.text();
-    try {
-      return JSON.parse(text);
-    } catch (e) {
-      console.error('apiPost JSON parse fail. Response was:', text);
-      return { error: 'invalid JSON response' };
-    }
-  } catch (e) {
-    console.error('apiPost fetch error:', e);
-    return { error: String(e) };
-  }
+    return await r.json();
+  } catch(e) { return null; }
 }
 async function loadAll() {
   if (!SCRIPT_URL) {
@@ -684,7 +678,7 @@ function attachTeacherEvents() {
         clearTomb('checks', name, currentDate);
         saveLocal();
         renderTeacher(document.getElementById('app'));
-        const res = await { action:'setCheck', name, date:currentDate, status: st });
+        const res = await apiPost({ action:'setCheck', name, date:currentDate, status: st });
         if (!res || res.error) showToast('저장 실패(로컬 보관됨)', 3000);
         else showToast('저장됨');
       });
