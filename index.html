@@ -271,12 +271,13 @@ async function apiGet() {
     return await r.json();
   } catch(e) { return null; }
 }
-async function apiPost(body) {
+async function body) {
   if (!SCRIPT_URL) return null;
   try {
     const r = await fetch(SCRIPT_URL, {
       method: 'POST',
       cache: 'no-store',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(body)
     });
     return await r.json();
@@ -678,7 +679,7 @@ function attachTeacherEvents() {
         clearTomb('checks', name, currentDate);
         saveLocal();
         renderTeacher(document.getElementById('app'));
-        const res = await apiPost({ action:'setCheck', name, date:currentDate, status: st });
+        const res = await { action:'setCheck', name, date:currentDate, status: st });
         if (!res || res.error) showToast('저장 실패(로컬 보관됨)', 3000);
         else showToast('저장됨');
       });
