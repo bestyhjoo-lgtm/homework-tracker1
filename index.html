@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>과제 현황판</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg2: #f5f5f3; --bg3: #eeede8;
+    --text: #1a1a1a; --text2: #6b6b68; --text3: #9b9b97;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
+    --radius: 8px; --radius-lg: 12px;
+    --green: #1D9E75; --green-bg: #E1F5EE; --green-dark: #085041;
+    --amber: #BA7517; --amber-bg: #FAEEDA; --amber-dark: #633806;
+    --red: #A32D2D; --red-bg: #FCEBEB; --red-dark: #791F1F;
+    --blue: #185FA5; --blue-bg: #E6F1FB; --blue-dark: #0C447C;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c; --bg2: #2a2a27; --bg3: #343430;
+      --text: #f0f0ec; --text2: #a0a09a; --text3: #6a6a64;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.18);
+      --green-bg: #04342C; --green-dark: #9FE1CB;
+      --amber-bg: #412402; --amber-dark: #FAC775;
+      --red-bg: #501313; --red-dark: #F7C1C1;
+      --blue-bg: #042C53; --blue-dark: #B5D4F4;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; }
+  .app { max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem; }
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 12px; }
+  .btn { padding: 7px 14px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: none; cursor: pointer; font-size: 13px; color: var(--text); }
+  .btn:hover { background: var(--bg2); }
+  .btn.primary { background: var(--green); color: #fff; border-color: var(--green); }
+  .btn.primary:hover { background: #0F6E56; }
+  .btn.danger { background: var(--red-bg); color: var(--red-dark); border-color: #F09595; }
+  .tabs { display: flex; border-bottom: 0.5px solid var(--border); margin-bottom: 1rem; background: var(--bg); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 0 1rem; }
+  .tab { padding: 10px 14px; font-size: 13px; cursor: pointer; color: var(--text2); border: none; border-bottom: 2px solid transparent; background: none; }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); font-weight: 500; }
+  .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 1rem; }
+  .stat-card { background: var(--bg2); border-radius: var(--radius); padding: 11px 13px; }
+  .stat-card .lbl { font-size: 11px; color: var(--text2); margin-bottom: 3px; }
+  .stat-card .val { font-size: 20px; font-weight: 500; }
+  .avatar { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 500; flex-shrink: 0; }
+  .tbadge { font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+  .s-row { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; margin-bottom: 8px; }
+  .s-row.has-comment { border-left: 3px solid var(--green); padding-left: 12px; }
+  .st-group { display: flex; gap: 4px; flex-wrap: wrap; }
+  .st-btn { padding: 5px 10px; border-radius: var(--radius); border: 0.5px solid var(--border); font-size: 11px; cursor: pointer; background: none; color: var(--text2); white-space: nowrap; }
+  .st-btn.done { background: var(--green-bg); color: var(--green-dark); border-color: #5DCAA5; }
+  .st-btn.partial { background: var(--amber-bg); color: var(--amber-dark); border-color: #EF9F27; }
+  .st-btn.none { background: var(--red-bg); color: var(--red-dark); border-color: #F09595; }
+  .bar-sm { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .bar-sm-fill { height: 100%; background: var(--green); border-radius: 2px; }
+  .cmt-preview { font-size: 12px; color: var(--text2); cursor: pointer; display: flex; align-items: center; gap: 5px; margin-top: 8px; padding-top: 8px; border-top: 0.5px solid var(--border); }
+  .cmt-preview:hover { color: var(--text); }
+  .text-input { font-size: 13px; padding: 7px 10px; border: 0.5px solid var(--border); border-radius: var(--radius); background: var(--bg2); color: var(--text); width: 100%; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+  .field input, .field select { width: 100%; font-size: 14px; padding: 9px 12px; border: 0.5px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); }
+  .ov-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+  .ov-table th { padding: 8px 10px; text-align: left; font-weight: 500; color: var(--text2); border-bottom: 0.5px solid var(--border); font-size: 11px; }
+  .ov-table td { padding: 9px 10px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+  .ov-table tr:last-child td { border-bottom: none; }
+  .bdg { display: inline-block; padding: 2px 7px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .bdg-done { background: var(--green-bg); color: var(--green-dark); }
+  .bdg-partial { background: var(--amber-bg); color: var(--amber-dark); }
+  .bdg-none { background: var(--red-bg); color: var(--red-dark); }
+  .section-lbl { font-size: 11px; font-weight: 500; color: var(--text2); letter-spacing: .04em; text-transform: uppercase; margin: 14px 0 7px; }
+  .input-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 6px; }
+  .date-nav { display: flex; align-items: center; gap: 6px; }
+  .date-nav button { background: none; border: 0.5px solid var(--border); border-radius: var(--radius); padding: 5px 9px; cursor: pointer; font-size: 13px; color: var(--text2); }
+  .date-nav button:hover { background: var(--bg2); }
+  .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 1.5rem 0; }
+  .role-card { border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem 1rem; text-align: center; cursor: pointer; background: var(--bg); transition: border-color .15s; }
+  .role-card:hover { border-color: var(--green); }
+  .setup-banner { background: var(--amber-bg); border: 0.5px solid #EF9F27; border-radius: var(--radius); padding: 12px 16px; margin-bottom: 1rem; font-size: 13px; color: var(--amber-dark); }
+  .setup-banner a { color: var(--amber); font-weight: 500; }
+  .fbtn { padding: 4px 10px; border: 0.5px solid var(--border); border-radius: 20px; font-size: 12px; cursor: pointer; background: none; color: var(--text2); }
+  .fbtn.active { background: var(--bg2); color: var(--text); border-color: var(--border2); }
+  .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: var(--radius); font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; }
+
+  .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:1000; padding:1rem; }
+  .modal-card { background: var(--bg); border-radius: var(--radius-lg); padding: 1.25rem; max-width: 420px; width: 100%; max-height: 80vh; overflow-y: auto; }
+  .modal-close { position:absolute; top:8px; right:12px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--text2); }
+  .date-chip { display:inline-block; font-size:12px; padding:4px 9px; border-radius:6px; margin:3px; background:var(--bg2); color:var(--text); }
+  .date-chip.done { background:var(--green-bg); color:var(--green-dark); }
+  .date-chip.partial { background:var(--amber-bg); color:var(--amber-dark); }
+  .date-chip.none { background:var(--red-bg); color:var(--red-dark); }
+  .clickable-num { cursor:pointer; transition: opacity .15s; }
+  .clickable-num:hover { opacity:0.7; }
+
+  @media (max-width: 500px) {
+    .stat-grid { grid-template-columns: repeat(2,1fr); }
+    .role-grid { grid-template-columns: 1fr; }
+    .teams-grid { grid-template-columns: 1fr; }
+    .st-group { gap: 3px; }
+    .st-btn { font-size: 10px; padding: 4px 7px; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================
+// ★ 여기에 Apps Script 배포 URL을 붙여넣으세요 ★
+// =====================================================
+let SCRIPT_URL = localStorage.getItem('hw_script_url') || '';
+// =====================================================
+
+const TEACHER_PW = '111111';
+const AVATAR_COLORS = [
+  ['#E6F1FB','#0C447C'],['#E1F5EE','#085041'],['#FAEEDA','#633806'],
+  ['#FBEAF0','#72243E'],['#FAECE7','#712B13'],['#EEEDFE','#3C3489'],
+  ['#EAF3DE','#27500A'],['#FCEBEB','#791F1F'],['#E1F5EE','#04342C'],
+  ['#F1EFE8','#444441'],['#E6F1FB','#042C53'],['#FAEEDA','#412402']
+];
+const TEAM_COLORS = [
+  ['#E6F1FB','#185FA5'],['#E1F5EE','#085041'],['#FAEEDA','#633806'],
+  ['#EEEDFE','#3C3489'],['#FAECE7','#712B13'],['#EAF3DE','#27500A']
+];
+
+let role = null, currentUser = null, currentTab = 'daily';
+let currentDate = todayStr(), filterTeam = 'all', openComments = {};
+let config = { teams: ['A팀','B팀','C팀','D팀'], students: [] };
+let checks = {}, comments = {}, extras = {};
+let syncing = false;
+let tombstones = JSON.parse(localStorage.getItem('hw_tombstones') || '{"checks":{},"extras":{},"comments":{}}');
+
+function saveLocal() {
+  try {
+    localStorage.setItem('hw_checks', JSON.stringify(checks));
+    localStorage.setItem('hw_extras', JSON.stringify(extras));
+    localStorage.setItem('hw_comments', JSON.stringify(comments));
+  } catch(e) {}
+}
+function loadLocal() {
+  try {
+    const c = JSON.parse(localStorage.getItem('hw_checks') || '{}');
+    const e = JSON.parse(localStorage.getItem('hw_extras') || '{}');
+    const m = JSON.parse(localStorage.getItem('hw_comments') || '{}');
+    Object.assign(checks, c); Object.assign(extras, e); Object.assign(comments, m);
+  } catch(e) {}
+}
+function saveTombs() { localStorage.setItem('hw_tombstones', JSON.stringify(tombstones)); }
+function addTomb(kind, name, date) {
+  if (!tombstones[kind]) tombstones[kind] = {};
+  if (!tombstones[kind][name]) tombstones[kind][name] = {};
+  tombstones[kind][name][date] = 1;
+  saveTombs();
+}
+function clearTomb(kind, name, date) {
+  if (tombstones[kind] && tombstones[kind][name]) {
+    delete tombstones[kind][name][date];
+    saveTombs();
+  }
+}
+function applyTombstones() {
+  ['checks','extras','comments'].forEach(kind => {
+    const store = kind==='checks'?checks:(kind==='extras'?extras:comments);
+    const tk = tombstones[kind] || {};
+    Object.keys(tk).forEach(name => {
+      Object.keys(tk[name] || {}).forEach(date => {
+        if (store[name]) delete store[name][date];
+      });
+    });
+  });
+}
+function normalizeDateKey(k) {
+  if (!k) return k;
+  const s = String(k);
+  // Already YYYY-MM-DD prefix
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  // Try Date parse for other formats
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+  }
+  return s;
+}
+function normalizeDataset(obj) {
+  if (!obj) return;
+  Object.keys(obj).forEach(name => {
+    const src = obj[name] || {};
+    const dst = {};
+    Object.keys(src).forEach(k => {
+      const nk = normalizeDateKey(k);
+      if (!nk) return;
+      const v = src[k];
+      // Prefer non-empty value if duplicate keys collapse
+      if (dst[nk] === undefined || dst[nk] === '' || dst[nk] === null) {
+        dst[nk] = v;
+      } else if (v !== undefined && v !== '' && v !== null) {
+        dst[nk] = v;
+      }
+    });
+    obj[name] = dst;
+  });
+}
+function normalizeAll() {
+  normalizeDataset(checks);
+  normalizeDataset(extras);
+  normalizeDataset(comments);
+  // also normalize tombstones (their keys should already be YYYY-MM-DD but just in case)
+  ['checks','extras','comments'].forEach(kind => {
+    if (tombstones[kind]) normalizeDataset(tombstones[kind]);
+  });
+}
+function pruneEmpties() {
+  [checks, extras, comments].forEach(store => {
+    Object.keys(store).forEach(name => {
+      Object.keys(store[name] || {}).forEach(date => {
+        if (!store[name][date]) delete store[name][date];
+      });
+    });
+  });
+}
+
+function p(n) { return String(n).padStart(2,'0'); }
+function todayStr() { const d = new Date(); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
+function fmtDate(s) {
+  const [y,m,d] = s.split('-');
+  const dt = new Date(+y,+m-1,+d);
+  const days = ['일','월','화','수','목','금','토'];
+  return `${+m}월 ${+d}일 (${days[dt.getDay()]})`;
+}
+function offsetDate(s, n) {
+  const [y,m,d] = s.split('-').map(Number);
+  const dt = new Date(y,m-1,d+n);
+  return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())}`;
+}
+function ac(i) { return AVATAR_COLORS[i % AVATAR_COLORS.length]; }
+function tc(i) { return TEAM_COLORS[i % TEAM_COLORS.length]; }
+function teamName(ti) { return config.teams[ti] || `팀${ti+1}`; }
+function getStudent(name) { return config.students.find(s => s.name === name); }
+function getStatus(name, date) { return (checks[name] && checks[name][date]) || ''; }
+function getComment(name, date) { return (comments[name] && comments[name][date]) || ''; }
+function getStats(name) {
+  const c = checks[name] || {};
+  const dates = Object.keys(c).filter(d => c[d]);
+  const done = dates.filter(d => c[d]==='done').length;
+  const partial = dates.filter(d => c[d]==='partial').length;
+  const none = dates.filter(d => c[d]==='none').length;
+  const total = done + partial + none;
+  const score = total ? Math.round((done*100 + partial*50) / total) : 0;
+  return { done, partial, none, total, score };
+}
+
+function getExtra(name, date) { return (extras[name] && extras[name][date]) || ''; }
+
+function showToast(msg, dur=2000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+async function apiGet() {
+  if (!SCRIPT_URL) return null;
+  try {
+    const sep = SCRIPT_URL.includes('?') ? '&' : '?';
+    const url = SCRIPT_URL + sep + 'action=getAll&_t=' + Date.now();
+    const r = await fetch(url, { cache: 'no-store' });
+    return await r.json();
+  } catch(e) { return null; }
+}
+async function apiPost(body) {
+  if (!SCRIPT_URL) return null;
+  try {
+    const r = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      cache: 'no-store',
+      body: JSON.stringify(body)
+    });
+    return await r.json();
+  } catch(e) { return null; }
+}
+async function loadAll() {
+  if (!SCRIPT_URL) {
+    loadLocal();
+    normalizeAll();
+    applyTombstones();
+    pruneEmpties();
+    return;
+  }
+  syncing = true;
+  const data = await apiGet();
+  syncing = false;
+  if (data && !data.error) {
+    if (data.config) config = data.config;
+    if (data.checks) checks = data.checks;
+    if (data.comments) comments = data.comments;
+    if (data.extras) extras = data.extras;
+  }
+  // Normalize date keys (server may convert dates to ISO 8601 strings)
+  normalizeAll();
+  // local overrides server (preserves user input even if server lost it)
+  try {
+    const lc = JSON.parse(localStorage.getItem('hw_checks') || '{}');
+    const le = JSON.parse(localStorage.getItem('hw_extras') || '{}');
+    const lm = JSON.parse(localStorage.getItem('hw_comments') || '{}');
+    Object.keys(lc).forEach(n => { checks[n] = Object.assign(checks[n]||{}, lc[n]); });
+    Object.keys(le).forEach(n => { extras[n] = Object.assign(extras[n]||{}, le[n]); });
+    Object.keys(lm).forEach(n => { comments[n] = Object.assign(comments[n]||{}, lm[n]); });
+  } catch(e) {}
+  // Final normalization pass to collapse any duplicate keys from local merge
+  normalizeAll();
+  applyTombstones();
+  pruneEmpties();
+  saveLocal();
+}
+
+// =====================================================
+// RENDER MAIN
+// =====================================================
+function logout() {
+  role = null;
+  currentUser = null;
+  const app = document.getElementById('app');
+  renderHome(app);
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (!role) renderHome(app);
+  else if (role === 'teacher') renderTeacher(app);
+  else renderStudent(app);
+}
+
+function renderHome(app) {
+  const noUrl = !SCRIPT_URL;
+  app.innerHTML = `
+    ${noUrl ? `<div class="setup-banner">
+      <strong>설정 필요:</strong> Apps Script 배포 URL을 입력해야 데이터가 저장됩니다.
+      <button class="btn" style="margin-left:8px;font-size:12px" onclick="promptUrl()">URL 입력</button>
+    </div>` : ''}
+    <div style="text-align:center;padding:2rem 0 1rem">
+      <div style="font-size:24px;font-weight:500;color:var(--text);margin-bottom:6px">과제 현황판</div>
+      <div style="font-size:13px;color:var(--text2)">역할을 선택해서 입장하세요</div>
+    </div>
+    <div class="role-grid">
+      <div class="role-card" onclick="startTeacher()">
+        <div style="font-size:32px;color:var(--text2);margin-bottom:10px">&#128203;</div>
+        <div style="font-size:16px;font-weight:500;margin-bottom:4px">교사</div>
+        <div style="font-size:12px;color:var(--text2)">학생 관리, 체크, 코멘트</div>
+      </div>
+      <div class="role-card" onclick="startStudent()">
+        <div style="font-size:32px;color:var(--text2);margin-bottom:10px">&#128100;</div>
+        <div style="font-size:16px;font-weight:500;margin-bottom:4px">학생</div>
+        <div style="font-size:12px;color:var(--text2)">내 과제 확인 및 체크</div>
+      </div>
+    </div>
+    ${SCRIPT_URL ? `<div style="text-align:center;margin-top:1rem">
+      <span style="font-size:11px;color:var(--text3)">연결됨: ${SCRIPT_URL.substring(0,40)}...</span>
+      <button class="btn" style="font-size:11px;margin-left:6px" onclick="promptUrl()">변경</button>
+    </div>` : ''}
+  `;
+}
+
+function promptUrl() {
+  const url = prompt('Apps Script 배포 URL을 입력하세요:', SCRIPT_URL);
+  if (url !== null) {
+    SCRIPT_URL = url.trim();
+    localStorage.setItem('hw_script_url', SCRIPT_URL);
+    render();
+  }
+}
+
+function startTeacher() {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div style="margin-bottom:1rem"><button class="btn" onclick="role=null;render()">← 뒤로</button></div>
+    <div style="max-width:340px;margin:0 auto">
+      <div class="card">
+        <div style="font-size:16px;font-weight:500;margin-bottom:1rem">교사 로그인</div>
+        <div class="field"><label>비밀번호</label><input type="password" id="pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')doTeacherLogin()" /></div>
+        <div id="pw-err" style="color:var(--red-dark);font-size:12px;display:none;margin-bottom:8px">비밀번호가 틀렸습니다</div>
+        <button class="btn primary" style="width:100%" onclick="doTeacherLogin()">입장</button>
+      </div>
+    </div>
+  `;
+  setTimeout(() => document.getElementById('pw') && document.getElementById('pw').focus(), 50);
+}
+
+async function doTeacherLogin() {
+  const pw = document.getElementById('pw').value;
+  if (pw !== TEACHER_PW) { document.getElementById('pw-err').style.display='block'; return; }
+  role = 'teacher'; currentTab = 'daily';
+  const app = document.getElementById('app');
+  app.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text2)"><div class="spinner"></div><div style="margin-top:10px;font-size:13px">데이터 불러오는 중...</div></div>`;
+  await loadAll();
+  render();
+}
+
+async function startStudent() {
+  role = 'student';
+  const app = document.getElementById('app');
+  app.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text2)"><div class="spinner"></div><div style="margin-top:10px;font-size:13px">데이터 불러오는 중...</div></div>`;
+  await loadAll();
+  render();
+}
+
+async function retryStudentLoad() {
+  const app = document.getElementById('app');
+  app.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text2)"><div class="spinner"></div></div>`;
+  await loadAll();
+  render();
+}
+
+// =====================================================
+// TEACHER VIEW
+// =====================================================
+function renderTeacher(app) {
+  let done=0, partial=0, none=0, scoreTot=0, scoreCnt=0;
+  config.students.forEach(s => {
+    const st = getStatus(s.name, currentDate);
+    if (st==='done') done++; else if (st==='partial') partial++; else if (st==='none') none++;
+    const stats = getStats(s.name);
+    if (stats.total > 0) { scoreTot += stats.score; scoreCnt++; }
+  });
+  const overall = scoreCnt ? Math.round(scoreTot/scoreCnt) : 0;
+  const tabDefs = [['daily','오늘 체크'],['overview','누적 현황'],['teams','팀 관리'],['assign','과제 설정']];
+
+  let tabContent = '';
+  if (currentTab === 'daily') tabContent = buildDailyTeacher();
+  else if (currentTab === 'overview') tabContent = buildOverview();
+  else if (currentTab === 'teams') tabContent = buildTeamsAdmin();
+  else tabContent = buildAssign();
+
+  app.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+      <div>
+        <span style="font-size:20px;font-weight:500">과제 현황판</span>
+        <span style="font-size:12px;color:var(--green);margin-left:8px">교사</span>
+        ${syncing ? '<span class="spinner" style="margin-left:8px"></span>' : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="date-nav">
+          <button onclick="currentDate=offsetDate(currentDate,-1);openComments={};renderTeacher(document.getElementById('app'))">&#8249;</button>
+          <span style="font-size:14px;font-weight:500;min-width:120px;text-align:center">${fmtDate(currentDate)}</span>
+          <button onclick="currentDate=offsetDate(currentDate,1);openComments={};renderTeacher(document.getElementById('app'))">&#8250;</button>
+        </div>
+        <button class="btn" style="font-size:12px" onclick="syncNow()">&#8635; 동기화</button>
+        <button class="btn" style="font-size:12px" onclick="logout()">나가기</button>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="lbl">전부 완료</div><div class="val" style="color:var(--green)">${done}명</div></div>
+      <div class="stat-card"><div class="lbl">일부 누락</div><div class="val" style="color:var(--amber)">${partial}명</div></div>
+      <div class="stat-card"><div class="lbl">미제출</div><div class="val" style="color:var(--red)">${none}명</div></div>
+      <div class="stat-card"><div class="lbl">누적 달성률</div><div class="val" style="color:var(--green)">${overall}%</div></div>
+    </div>
+    <div style="background:var(--bg);border-radius:var(--radius-lg) var(--radius-lg) 0 0;border:0.5px solid var(--border);border-bottom:none">
+      <div class="tabs">${tabDefs.map(([t,l]) => `<button class="tab${currentTab===t?' active':''}" onclick="currentTab='${t}';renderTeacher(document.getElementById('app'))">${l}</button>`).join('')}</div>
+    </div>
+    <div style="background:var(--bg);border:0.5px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);padding:1rem">
+      ${tabContent}
+    </div>
+  `;
+  attachTeacherEvents();
+}
+
+async function syncNow() {
+  syncing = true;
+  renderTeacher(document.getElementById('app'));
+  await loadAll();
+  syncing = false;
+  renderTeacher(document.getElementById('app'));
+  showToast('동기화 완료');
+}
+
+function buildDailyTeacher() {
+  const filtered = filterTeam==='all' ? config.students : config.students.filter(s => s.team===filterTeam);
+  const filterBtns = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+    <button class="fbtn${filterTeam==='all'?' active':''}" onclick="filterTeam='all';renderTeacher(document.getElementById('app'))">전체</button>
+    ${config.teams.map((t,ti) => {
+      const [bg,fg] = tc(ti);
+      return `<button class="fbtn${filterTeam===ti?' active':''}" style="${filterTeam===ti?`background:${bg};color:${fg};border-color:${fg}`:''}" onclick="filterTeam=${ti};renderTeacher(document.getElementById('app'))">${t}</button>`;
+    }).join('')}
+    <span style="flex:1"></span>
+    <button class="btn" style="font-size:12px;padding:5px 10px;background:var(--green-bg);color:var(--green-dark);border-color:#5DCAA5" onclick="bulkAllDone()">&#10003; 일괄 전부</button>
+    <button class="btn danger" style="font-size:12px;padding:5px 10px" onclick="bulkClearDate()">&#10005; 일괄 삭제</button>
+  </div>`;
+  const rows = filtered.map(s => {
+    const i = config.students.indexOf(s);
+    const [abg,afg] = ac(i); const [tbg,tfg] = tc(s.team);
+    const st = getStatus(s.name, currentDate);
+    const ex = getExtra(s.name, currentDate);
+    const stats = getStats(s.name);
+    const cmt = getComment(s.name, currentDate);
+    const isOpen = !!openComments[s.name+currentDate];
+    return `<div class="s-row${cmt?' has-comment':''}" data-name="${s.name}">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="avatar" style="background:${abg};color:${afg};width:34px;height:34px;font-size:12px">${s.name[0]}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:14px;font-weight:500">${s.name}</span>
+            <span class="tbadge" style="background:${tbg};color:${tfg}">${teamName(s.team)}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.task||'과제 없음'}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+          <div class="st-group">
+            <button class="st-btn${st==='done'?' done':''}" data-action="status" data-name="${s.name}" data-st="done">&#10003; 전부</button>
+            <button class="st-btn${st==='partial'?' partial':''}" data-action="status" data-name="${s.name}" data-st="partial">&#9737; 일부</button>
+            <button class="st-btn${st==='none'?' none':''}" data-action="status" data-name="${s.name}" data-st="none">&#10007; 안함</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <span style="font-size:11px;color:var(--text2)">추가학습</span>
+            <button class="st-btn${ex==='O'?' done':''}" data-action="extra" data-name="${s.name}" data-ex="O" style="padding:3px 9px;font-size:12px">O</button>
+            <button class="st-btn${ex==='X'?' none':''}" data-action="extra" data-name="${s.name}" data-ex="X" style="padding:3px 9px;font-size:12px">X</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:56px">
+          <div class="bar-sm" style="width:56px"><div class="bar-sm-fill" style="width:${stats.score}%"></div></div>
+          <div style="font-size:11px;color:var(--text2)">누적 ${stats.score}%</div>
+        </div>
+      </div>
+      <div class="cmt-preview" data-action="togglecmt" data-name="${s.name}">
+        <span style="font-size:13px">&#128172;</span>
+        <span>${cmt || '코멘트 추가...'}</span>
+        <span style="margin-left:auto;font-size:11px">${isOpen?'▲':'▼'}</span>
+      </div>
+      ${isOpen ? `<div style="display:flex;gap:6px;margin-top:6px">
+        <textarea id="cmt-${s.name}" style="flex:1;font-size:12px;padding:7px 10px;border:0.5px solid var(--border);border-radius:var(--radius);min-height:54px;resize:vertical;background:var(--bg2);color:var(--text)" placeholder="오늘 코멘트">${cmt}</textarea>
+        <button class="btn" style="font-size:12px;align-self:flex-end" data-action="savecmt" data-name="${s.name}">저장</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+  return filterBtns + (rows || '<div style="text-align:center;padding:2rem;color:var(--text2);font-size:13px">학생이 없습니다. 과제 설정에서 추가하세요.</div>');
+}
+
+function getExtraDates(name) {
+  const ex = extras[name] || {};
+  return Object.keys(ex).filter(d => ex[d] === 'O').sort().reverse();
+}
+
+function getExtraCount(name) {
+  const ex = extras[name] || {};
+  return Object.keys(ex).filter(d => ex[d] === 'O').length;
+}
+
+function buildOverviewRows(forStudent) {
+  // Keep config.students order (same as 오늘 체크)
+  return config.students.map(s => {
+    const i = config.students.indexOf(s);
+    const [abg,afg] = ac(i); const [tbg,tfg] = tc(s.team);
+    const stats = getStats(s.name);
+    const col = stats.score>=80 ? 'var(--green)' : stats.score>=50 ? 'var(--amber)' : 'var(--red)';
+    const exCnt = getExtraCount(s.name);
+    const resetBtn = forStudent ? '' : `<button class="btn danger" style="font-size:10px;padding:3px 7px" data-action="resetstu" data-name="${s.name}">초기화</button>`;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:7px"><div class="avatar" style="background:${abg};color:${afg};width:26px;height:26px;font-size:11px;flex-shrink:0">${s.name[0]}</div><span>${s.name}</span></div></td>
+      <td><span class="tbadge" style="background:${tbg};color:${tfg}">${teamName(s.team)}</span></td>
+      <td style="font-size:11px;color:var(--text2);min-width:160px;white-space:normal;word-break:break-word;line-height:1.4">${s.task||'—'}</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;min-width:40px"><div style="height:100%;width:${stats.score}%;background:${col};border-radius:3px"></div></div><span style="font-weight:500;color:${col}">${stats.score}%</span></div></td>
+      <td><span class="bdg bdg-done clickable-num" data-detail="done" data-name="${s.name}">${stats.done}일</span></td>
+      <td><span class="bdg bdg-partial clickable-num" data-detail="partial" data-name="${s.name}">${stats.partial}일</span></td>
+      <td><span class="bdg bdg-none clickable-num" data-detail="none" data-name="${s.name}">${stats.none}일</span></td>
+      <td><span class="bdg bdg-done clickable-num" data-detail="extra" data-name="${s.name}" style="background:var(--blue-bg);color:var(--blue-dark)">${exCnt}회</span></td>
+      ${forStudent ? '' : `<td>${resetBtn}</td>`}
+    </tr>`;
+  }).join('');
+}
+
+function buildOverview() {
+  const rows = buildOverviewRows(false);
+  return `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <button class="btn danger" style="font-size:12px" onclick="resetAllRecords()">&#9888; 전체 기록 초기화</button>
+    </div>
+    <div style="overflow-x:auto"><table class="ov-table" style="table-layout:auto">
+    <thead><tr><th style="width:90px">학생</th><th style="width:60px">팀</th><th style="min-width:160px">과제</th><th style="width:110px">달성률</th><th style="width:50px">완료</th><th style="width:50px">누락</th><th style="width:50px">미제출</th><th style="width:60px">추가학습</th><th style="width:60px">관리</th></tr></thead>
+    <tbody>${rows||'<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text2)">학생이 없습니다</td></tr>'}</tbody>
+  </table></div>`;
+}
+
+function buildTeamsAdmin() {
+  const teamInputs = config.teams.map((t,ti) => {
+    const [bg,fg] = tc(ti);
+    const members = config.students.filter(s => s.team===ti);
+    const canDelete = members.length === 0;
+    return `<div style="display:flex;align-items:center;gap:4px;background:${bg};border-radius:var(--radius);padding:5px 10px">
+      <input style="background:none;border:none;font-size:13px;font-weight:500;color:${fg};outline:none;width:70px" value="${t}" data-action="teamname" data-ti="${ti}" />
+      ${canDelete
+        ? `<button style="background:none;border:none;cursor:pointer;color:${fg};opacity:0.6;font-size:14px;padding:0 2px;line-height:1" data-action="removeteam" data-ti="${ti}" title="팀 삭제">&#10005;</button>`
+        : `<span style="font-size:11px;color:${fg};opacity:0.5">${members.length}명</span>`
+      }
+    </div>`;
+  }).join('');
+  const memberRows = config.students.map((s,i) => {
+    const [abg,afg] = ac(i);
+    const opts = config.teams.map((t,ti) => `<option value="${ti}"${s.team===ti?' selected':''}>${t}</option>`).join('');
+    return `<div class="input-row">
+      <div class="avatar" style="background:${abg};color:${afg};width:28px;height:28px;font-size:11px;flex-shrink:0">${s.name[0]}</div>
+      <span style="font-size:13px;font-weight:500;flex:1">${s.name}</span>
+      <select style="font-size:12px;padding:4px 8px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text)" data-action="assignteam" data-name="${s.name}">${opts}</select>
+    </div>`;
+  }).join('');
+  const summaryCards = config.teams.map((t,ti) => {
+    const [bg,fg] = tc(ti);
+    const members = config.students.filter(s => s.team===ti);
+    const avg = members.length ? Math.round(members.reduce((a,s)=>a+getStats(s.name).score,0)/members.length) : 0;
+    const memberList = members.map(s => {
+      const st = getStats(s.name);
+      const col = st.score>=80?'var(--green)':st.score>=50?'var(--amber)':'var(--red)';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:12px;flex:1">${s.name}</span><span style="font-size:12px;font-weight:500;color:${col}">${st.score}%</span></div>`;
+    }).join('');
+    return `<div class="card" style="margin-bottom:0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:500;color:${fg}">${t}</span>
+        <span style="font-size:12px;color:var(--text2)">${members.length}명 · 평균 ${avg}%</span>
+      </div>
+      ${memberList||'<span style="font-size:12px;color:var(--text2)">배정된 학생 없음</span>'}
+    </div>`;
+  }).join('');
+  return `
+    <div class="section-lbl">팀 목록</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center">
+      ${teamInputs}
+      <button class="btn" style="font-size:12px;padding:5px 10px" data-action="addteam">+ 팀 추가</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">팀 이름을 클릭해서 수정 · 학생이 없는 팀만 삭제 가능</div>
+    <div class="section-lbl" style="margin-top:16px">학생 팀 배정</div>
+    ${memberRows||'<div style="color:var(--text2);font-size:13px">학생이 없습니다</div>'}
+    <div class="section-lbl" style="margin-top:20px">팀별 현황</div>
+    <div class="teams-grid">${summaryCards}</div>
+  `;
+}
+
+function buildAssign() {
+  const rows = config.students.map((s,i) => {
+    const [abg,afg] = ac(i);
+    const isFirst = i === 0;
+    const isLast = i === config.students.length - 1;
+    return `<div class="input-row" style="gap:6px">
+      <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
+        <button style="background:none;border:0.5px solid var(--border);border-radius:4px;width:22px;height:18px;cursor:pointer;font-size:10px;color:var(--text2);line-height:1;${isFirst?'opacity:0.25;pointer-events:none':''}" data-action="moveup" data-idx="${i}">▲</button>
+        <button style="background:none;border:0.5px solid var(--border);border-radius:4px;width:22px;height:18px;cursor:pointer;font-size:10px;color:var(--text2);line-height:1;${isLast?'opacity:0.25;pointer-events:none':''}" data-action="movedown" data-idx="${i}">▼</button>
+      </div>
+      <div class="avatar" style="background:${abg};color:${afg};width:28px;height:28px;font-size:11px;flex-shrink:0">${s.name[0]}</div>
+      <span style="font-size:13px;font-weight:500;min-width:52px">${s.name}</span>
+      <input class="text-input" type="text" value="${s.task||''}" placeholder="과제 입력" data-action="settask" data-name="${s.name}" />
+      <button class="btn danger" style="font-size:11px;padding:4px 8px;flex-shrink:0" data-action="removestudent" data-name="${s.name}">삭제</button>
+    </div>`;
+  }).join('');
+  return `
+    <div class="section-lbl">학생 목록 <span style="font-weight:400;font-size:10px;color:var(--text3)">▲▼ 으로 순서 변경</span></div>
+    ${rows||'<div style="color:var(--text2);font-size:13px;margin-bottom:10px">아래에서 학생을 추가하세요.</div>'}
+    <div class="card" style="margin-top:12px">
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px">새 학생 추가</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input class="text-input" type="text" id="new-name" placeholder="이름" style="flex:1;min-width:100px" />
+        <select id="new-team" style="font-size:13px;padding:7px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text)">
+          ${config.teams.map((t,ti) => `<option value="${ti}">${t}</option>`).join('')}
+        </select>
+        <button class="btn primary" data-action="addstudent">추가</button>
+      </div>
+    </div>`;
+}
+
+function attachTeacherEvents() {
+  document.querySelectorAll('[data-action]').forEach(el => {
+    const action = el.dataset.action;
+    if (action === 'status') {
+      el.addEventListener('click', async () => {
+        const name=el.dataset.name, st=el.dataset.st;
+        if (!checks[name]) checks[name]={};
+        // No toggle: clicking same button just keeps the state
+        checks[name][currentDate] = st;
+        clearTomb('checks', name, currentDate);
+        saveLocal();
+        renderTeacher(document.getElementById('app'));
+        const res = await apiPost({ action:'setCheck', name, date:currentDate, status: st });
+        if (!res || res.error) showToast('저장 실패(로컬 보관됨)', 3000);
+        else showToast('저장됨');
+      });
+    } else if (action === 'extra') {
+      el.addEventListener('click', async () => {
+        const name=el.dataset.name, ex=el.dataset.ex;
+        if (!extras[name]) extras[name]={};
+        const prev = extras[name][currentDate];
+        if (prev === ex) {
+          // Toggle off: delete
+          delete extras[name][currentDate];
+          addTomb('extras', name, currentDate);
+        } else {
+          extras[name][currentDate] = ex;
+          clearTomb('extras', name, currentDate);
+        }
+        saveLocal();
+        renderTeacher(document.getElementById('app'));
+        await apiPost({ action:'setExtra', name, date:currentDate, extra: extras[name][currentDate]||'' });
+      });
+    } else if (action === 'resetstu') {
+      el.addEventListener('click', async () => {
+        const name = el.dataset.name;
+        if (!confirm(`${name} 학생의 모든 기록을 삭제할까요? 되돌릴 수 없습니다.`)) return;
+        await resetStudent(name);
+      });
+    } else if (action === 'detail') {
+      el.addEventListener('click', () => {
+        showDetailModal(el.dataset.name, el.dataset.detail);
+      });
+    } else if (action === 'togglecmt') {
+      el.addEventListener('click', () => { const k=el.dataset.name+currentDate; openComments[k]=!openComments[k]; renderTeacher(document.getElementById('app')); });
+    } else if (action === 'savecmt') {
+      el.addEventListener('click', async () => {
+        const name=el.dataset.name;
+        const txt = (document.getElementById(`cmt-${name}`)?.value||'').trim();
+        if (!comments[name]) comments[name]={};
+        if (txt) {
+          comments[name][currentDate]=txt;
+          clearTomb('comments', name, currentDate);
+        } else {
+          delete comments[name][currentDate];
+          addTomb('comments', name, currentDate);
+        }
+        saveLocal();
+        renderTeacher(document.getElementById('app'));
+        const res = await apiPost({ action:'setComment', name, date:currentDate, comment:txt });
+        if (!res || res.error) showToast('저장 실패(로컬 보관됨)', 3000); else showToast('코멘트 저장됨');
+      });
+    } else if (action === 'teamname') {
+      el.addEventListener('input', () => { config.teams[+el.dataset.ti]=el.value; });
+      el.addEventListener('blur', async () => { await apiPost({ action:'saveConfig', data:config }); showToast('팀 이름 저장됨'); });
+    } else if (action === 'assignteam') {
+      el.addEventListener('change', async () => {
+        const s = config.students.find(s=>s.name===el.dataset.name);
+        if (s) { s.team=+el.value; await apiPost({ action:'saveConfig', data:config }); renderTeacher(document.getElementById('app')); showToast('팀 배정 저장됨'); }
+      });
+    } else if (action === 'settask') {
+      el.addEventListener('input', () => { const s=config.students.find(s=>s.name===el.dataset.name); if(s) s.task=el.value; });
+      el.addEventListener('blur', async () => { await apiPost({ action:'saveConfig', data:config }); showToast('과제 저장됨'); });
+    } else if (action === 'removestudent') {
+      el.addEventListener('click', async () => {
+        if (!confirm(`${el.dataset.name} 학생을 삭제할까요?`)) return;
+        config.students = config.students.filter(s=>s.name!==el.dataset.name);
+        await apiPost({ action:'saveConfig', data:config });
+        renderTeacher(document.getElementById('app'));
+        showToast('삭제됨');
+      });
+    } else if (action === 'addstudent') {
+      el.addEventListener('click', async () => {
+        const nameEl=document.getElementById('new-name'), teamEl=document.getElementById('new-team');
+        const name=nameEl?.value?.trim();
+        if (!name) return;
+        if (config.students.find(s=>s.name===name)) { showToast('이미 존재하는 이름입니다', 2500); return; }
+        config.students.push({ name, team:+(teamEl?.value||0), task:'' });
+        await apiPost({ action:'saveConfig', data:config });
+        renderTeacher(document.getElementById('app'));
+        showToast(`${name} 추가됨`);
+      });
+    } else if (action === 'moveup') {
+      el.addEventListener('click', async () => {
+        const idx = +el.dataset.idx;
+        if (idx === 0) return;
+        [config.students[idx-1], config.students[idx]] = [config.students[idx], config.students[idx-1]];
+        await apiPost({ action:'saveConfig', data:config });
+        renderTeacher(document.getElementById('app'));
+      });
+    } else if (action === 'movedown') {
+      el.addEventListener('click', async () => {
+        const idx = +el.dataset.idx;
+        if (idx >= config.students.length-1) return;
+        [config.students[idx], config.students[idx+1]] = [config.students[idx+1], config.students[idx]];
+        await apiPost({ action:'saveConfig', data:config });
+        renderTeacher(document.getElementById('app'));
+      });
+    } else if (action === 'addteam') {
+      el.addEventListener('click', async () => {
+        const newIdx = config.teams.length;
+        const defaultNames = ['A팀','B팀','C팀','D팀','E팀','F팀','G팀','H팀'];
+        config.teams.push(defaultNames[newIdx] || `팀${newIdx+1}`);
+        await apiPost({ action:'saveConfig', data:config });
+        renderTeacher(document.getElementById('app'));
+        showToast('팀 추가됨');
+      });
+    } else if (action === 'removeteam') {
+      el.addEventListener('click', async () => {
+        const ti = +el.dataset.ti;
+        const members = config.students.filter(s => s.team === ti);
+        if (members.length > 0) { showToast('학생이 있는 팀은 삭제할 수 없습니다', 2500); return; }
+        config.teams.splice(ti, 1);
+        config.students.forEach(s => { if (s.team > ti) s.team -= 1; });
+        await apiPost({ action:'saveConfig', data:config });
+        renderTeacher(document.getElementById('app'));
+        showToast('팀 삭제됨');
+      });
+    }
+  });
+  // Detail-modal handlers for clickable numbers
+  document.querySelectorAll('[data-detail]').forEach(el => {
+    el.addEventListener('click', () => {
+      showDetailModal(el.dataset.name, el.dataset.detail);
+    });
+  });
+}
+
+// =====================================================
+// DETAIL MODAL (clickable numbers in overview)
+// =====================================================
+function showDetailModal(name, kind) {
+  const labels = { done:'완료', partial:'누락(일부)', none:'미제출', extra:'추가학습' };
+  const cls = { done:'done', partial:'partial', none:'none', extra:'done' };
+  let dates;
+  if (kind === 'extra') {
+    const ex = extras[name] || {};
+    dates = Object.keys(ex).filter(d => ex[d] === 'O').sort();
+  } else {
+    const c = checks[name] || {};
+    dates = Object.keys(c).filter(d => c[d] === kind).sort();
+  }
+  const chips = dates.length
+    ? dates.map(d => {
+        const nk = normalizeDateKey(d);
+        const mm = String(nk).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        const label = mm ? `${+mm[2]}월 ${+mm[3]}일` : String(d);
+        return `<span class="date-chip ${cls[kind]}">${label}</span>`;
+      }).join('')
+    : '<div style="color:var(--text2);font-size:13px;padding:10px 0">해당 날짜가 없습니다</div>';
+  const old = document.getElementById('detail-modal');
+  if (old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'detail-modal';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-card" style="position:relative">
+      <button class="modal-close" onclick="document.getElementById('detail-modal').remove()">&times;</button>
+      <div style="font-size:15px;font-weight:500;margin-bottom:4px">${name}</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px">${labels[kind]} · 총 ${dates.length}회</div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px">${chips}</div>
+    </div>
+  `;
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+// =====================================================
+// BULK / RESET HELPERS (teacher only)
+// =====================================================
+async function bulkAllDone() {
+  if (role !== 'teacher') return;
+  const filtered = filterTeam==='all' ? config.students : config.students.filter(s => s.team===filterTeam);
+  if (!filtered.length) { showToast('대상 학생이 없습니다'); return; }
+  if (!confirm(`${fmtDate(currentDate)} — 표시된 ${filtered.length}명 모두 '전부 완료'로 체크할까요?`)) return;
+  for (const s of filtered) {
+    if (!checks[s.name]) checks[s.name] = {};
+    checks[s.name][currentDate] = 'done';
+    clearTomb('checks', s.name, currentDate);
+  }
+  saveLocal();
+  renderTeacher(document.getElementById('app'));
+  for (const s of filtered) {
+    await apiPost({ action:'setCheck', name:s.name, date:currentDate, status:'done' });
+  }
+  showToast('일괄 완료 적용됨');
+}
+
+async function bulkClearDate() {
+  if (role !== 'teacher') return;
+  const filtered = filterTeam==='all' ? config.students : config.students.filter(s => s.team===filterTeam);
+  if (!filtered.length) { showToast('대상 학생이 없습니다'); return; }
+  if (!confirm(`${fmtDate(currentDate)} — 표시된 ${filtered.length}명의 모든 체크/추가학습/코멘트를 삭제할까요?`)) return;
+  for (const s of filtered) {
+    if (checks[s.name]) delete checks[s.name][currentDate];
+    if (extras[s.name]) delete extras[s.name][currentDate];
+    if (comments[s.name]) delete comments[s.name][currentDate];
+    addTomb('checks', s.name, currentDate);
+    addTomb('extras', s.name, currentDate);
+    addTomb('comments', s.name, currentDate);
+  }
+  saveLocal();
+  renderTeacher(document.getElementById('app'));
+  for (const s of filtered) {
+    await apiPost({ action:'setCheck', name:s.name, date:currentDate, status:'' });
+    await apiPost({ action:'setExtra', name:s.name, date:currentDate, extra:'' });
+    await apiPost({ action:'setComment', name:s.name, date:currentDate, comment:'' });
+  }
+  showToast('일괄 삭제됨');
+}
+
+async function resetStudent(name) {
+  if (role !== 'teacher') return;
+  // Record tombstones for every existing date
+  const allDates = new Set([
+    ...Object.keys(checks[name] || {}),
+    ...Object.keys(extras[name] || {}),
+    ...Object.keys(comments[name] || {})
+  ]);
+  allDates.forEach(d => {
+    addTomb('checks', name, d);
+    addTomb('extras', name, d);
+    addTomb('comments', name, d);
+  });
+  delete checks[name]; delete extras[name]; delete comments[name];
+  saveLocal();
+  renderTeacher(document.getElementById('app'));
+  for (const d of allDates) {
+    await apiPost({ action:'setCheck', name, date:d, status:'' });
+    await apiPost({ action:'setExtra', name, date:d, extra:'' });
+    await apiPost({ action:'setComment', name, date:d, comment:'' });
+  }
+  showToast(`${name} 기록 초기화됨`);
+}
+
+async function resetAllRecords() {
+  if (role !== 'teacher') return;
+  if (!confirm('⚠ 모든 학생의 모든 날짜 기록을 삭제합니다. 정말로 진행할까요?')) return;
+  if (!confirm('정말 확실합니까? 이 작업은 되돌릴 수 없습니다.')) return;
+  // First refresh from server to catch any hidden past data
+  await loadAll();
+  const tasks = [];
+  config.students.forEach(s => {
+    const allDates = new Set([
+      ...Object.keys(checks[s.name] || {}),
+      ...Object.keys(extras[s.name] || {}),
+      ...Object.keys(comments[s.name] || {})
+    ]);
+    allDates.forEach(d => {
+      addTomb('checks', s.name, d);
+      addTomb('extras', s.name, d);
+      addTomb('comments', s.name, d);
+      tasks.push(['setCheck', s.name, d, '']);
+      tasks.push(['setExtra', s.name, d, '']);
+      tasks.push(['setComment', s.name, d, '']);
+    });
+    delete checks[s.name]; delete extras[s.name]; delete comments[s.name];
+  });
+  saveLocal();
+  renderTeacher(document.getElementById('app'));
+  showToast('초기화 중... 서버 동기화 진행');
+  for (const t of tasks) {
+    const body = { action:t[0], name:t[1], date:t[2] };
+    if (t[0]==='setCheck') body.status=''; else if (t[0]==='setExtra') body.extra=''; else body.comment='';
+    await apiPost(body);
+  }
+  showToast('전체 기록 초기화 완료');
+}
+
+// =====================================================
+// STUDENT VIEW
+// =====================================================
+// (legacy studentTab removed; student view = overview only)
+
+function renderStudent(app) {
+  // Aggregate totals across all students
+  let totalDone=0, totalPartial=0, totalNone=0, scoreSum=0, scoreCnt=0;
+  config.students.forEach(s => {
+    const st = getStats(s.name);
+    totalDone += st.done; totalPartial += st.partial; totalNone += st.none;
+    if (st.total > 0) { scoreSum += st.score; scoreCnt++; }
+  });
+  const avgScore = scoreCnt ? Math.round(scoreSum/scoreCnt) : 0;
+
+  const rows = buildOverviewRows(true);
+
+  app.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+      <div>
+        <span style="font-size:20px;font-weight:500">과제 현황판</span>
+        <span style="font-size:12px;color:var(--blue);margin-left:8px">학생 (읽기 전용)</span>
+        ${syncing ? '<span class="spinner" style="margin-left:8px"></span>' : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn" style="font-size:12px" onclick="syncStudentData()">&#8635; 동기화</button>
+        <button class="btn" style="font-size:12px" onclick="logout()">나가기</button>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="lbl">전체 완료</div><div class="val" style="color:var(--green)">${totalDone}회</div></div>
+      <div class="stat-card"><div class="lbl">전체 누락</div><div class="val" style="color:var(--amber)">${totalPartial}회</div></div>
+      <div class="stat-card"><div class="lbl">전체 미제출</div><div class="val" style="color:var(--red)">${totalNone}회</div></div>
+      <div class="stat-card"><div class="lbl">평균 달성률</div><div class="val" style="color:var(--green)">${avgScore}%</div></div>
+    </div>
+
+    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem">
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px">전체 누적 현황</div>
+      <div style="overflow-x:auto"><table class="ov-table" style="table-layout:auto">
+        <thead><tr>
+          <th style="width:90px">학생</th>
+          <th style="width:60px">팀</th>
+          <th style="min-width:160px">과제</th>
+          <th style="width:110px">달성률</th>
+          <th style="width:50px">완료</th>
+          <th style="width:50px">누락</th>
+          <th style="width:50px">미제출</th>
+          <th style="width:60px">추가학습</th>
+        </tr></thead>
+        <tbody>${rows||'<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text2)">학생이 없습니다</td></tr>'}</tbody>
+      </table></div>
+    </div>
+  `;
+
+  // Wire click handlers for clickable numbers
+  document.querySelectorAll('[data-detail]').forEach(el => {
+    el.addEventListener('click', () => {
+      showDetailModal(el.dataset.name, el.dataset.detail);
+    });
+  });
+}
+
+async function syncStudentData() {
+  showToast('동기화 중...');
+  await loadAll();
+  renderStudent(document.getElementById('app'));
+  showToast('동기화 완료');
+}
+
+// =====================================================
+// AUTO SYNC (다른 기기 변경사항 자동 반영)
+// =====================================================
+let autoSyncTimer = null;
+let lastDataSnapshot = '';
+
+function snapshotData() {
+  try {
+    return JSON.stringify({ checks, extras, comments, config });
+  } catch(e) { return ''; }
+}
+
+async function autoSyncTick() {
+  if (!SCRIPT_URL) return;
+  if (syncing) return;
+  if (document.hidden) return;
+  // 모달이 열려있거나 입력 중이면 건너뜀
+  if (document.querySelector('.modal-overlay')) return;
+  const before = snapshotData();
+  await loadAll();
+  const after = snapshotData();
+  if (before !== after) {
+    render();
+    showToast('새 데이터 반영됨');
+  }
+  lastDataSnapshot = after;
+}
+
+function startAutoSync() {
+  if (autoSyncTimer) clearInterval(autoSyncTimer);
+  autoSyncTimer = setInterval(autoSyncTick, 60000); // 60초마다
+}
+
+// 탭 활성화 시 즉시 동기화
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && SCRIPT_URL) {
+    autoSyncTick();
+  }
+});
+
+// =====================================================
+// INIT
+// =====================================================
+(async () => {
+  if (SCRIPT_URL) {
+    const app = document.getElementById('app');
+    app.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text2)"><div class="spinner"></div><div style="margin-top:10px;font-size:13px">데이터 불러오는 중...</div></div>`;
+    await loadAll();
+    lastDataSnapshot = snapshotData();
+    startAutoSync();
+  }
+  render();
+})();
+</script>
+</body>
+</html>
